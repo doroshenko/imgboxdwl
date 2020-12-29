@@ -73,12 +73,17 @@ mkdir -p "${gallery_name}" && cd "${gallery_name}"
 
 printf "\\n\\nAbout to save %d images to folder %s/\\n\\n" $(number_of_images_in_the_gallery "${gallery_url}") "${gallery_name}"
 
+counter=0
+
 for url in $(curl -s "${gallery_url}" | grep -E -o 'thumbs\d+.*"' | tr -d '"'); do
 
 	printf -v link "https://imgbox.com/%s" $(extract_name "${url}")
 	temp=$(curl -s "${link}" | grep -E -o 'https?.*download=true')
 
-	curl -O -# ${temp%%\?*}
+	curl ${temp%%\?*} -o "`printf %03d $counter`.png"
+	(( counter++ ))
 done
+
+zip "../${gallery_name}" *
 
 printf "\\n\\n%s images were saved to folder %s/\\n\\n" $(find . -type f | wc -l) "${gallery_name}"
